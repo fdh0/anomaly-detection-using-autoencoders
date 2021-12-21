@@ -49,12 +49,42 @@ class AnomalyAE(nn.Module):
         x4 = F.leaky_relu((self.bn5(self.conv5(x3))), slope)
 
         x5 = F.leaky_relu(self.bn_tr1(self.conv_tr1(x4)), slope)
+        
+        print('x',x.shape)
+        print('x1',x1.shape)
+        print('x2',x2.shape)
+        print('x3',x3.shape)
+        print('x4',x4.shape)
+        print('x5',x5.shape)
+
+        # add interpolate
+        if(x3.shape!=x5.shape):
+          x3 = F.interpolate(x3, size=(x5.shape[2], x5.shape[3]), mode='nearest') 
+          print('x3_',x3.shape)
+
         x6 = F.leaky_relu(self.bn_tr2(
             self.conv_tr2(torch.cat([x5, x3], 1))), slope)
+        
+        # add interpolate
+        if(x2.shape!=x6.shape):
+          x2 = F.interpolate(x2, size=(x6.shape[2], x6.shape[3]), mode='nearest') 
+          print('x2_',x2.shape)
+        
         x7 = F.leaky_relu(self.bn_tr3(
             self.conv_tr3(torch.cat([x6, x2], 1))), slope)
+
+        # add interpolate
+        if(x1.shape!=x7.shape):
+          x1 = F.interpolate(x1, size=(x7.shape[2], x7.shape[3]), mode='nearest') 
+          print('x1_',x1.shape)
+
         x8 = F.leaky_relu(self.bn_tr4(
             self.conv_tr4(torch.cat([x7, x1], 1))), slope)
+            
+        # add interpolate
+        if(x.shape!=x8.shape):
+          x = F.interpolate(x, size=(x8.shape[2], x8.shape[3]), mode='nearest') 
+          print('x_',x.shape)
 
         output = F.leaky_relu(self.bn_output(
             self.conv_output(torch.cat([x8, x], 1))), slope)
